@@ -1,34 +1,55 @@
-/// <reference types="cypress" />
+const defaultFormAddAsset = '#defaultFormAddAsset';
+const sendButton = 'button';
+const validFeedbackLabel = 'div.valid-feedback';
 
-//import { Given } from "cypress-cucumber-preprocessor/steps";
-import AddAssetPage from '../common/addAssetUtils'
-import { Given, Then, When } from 'cypress-cucumber-preprocessor/steps';
+class AddAssetPage{ 
+    static globalValidId = '';
+    
+    static getGlobalValidId(){
+        return this.globalValidId;
+    }
 
-  Given(/^Add page is open$/, () => {
-    AddAssetPage.visit();
-  });
-  
-  When(/^I type new Asset valid id and click Send$/, () => {
-    var validId = AddAssetPage.generateValidId()
-    AddAssetPage.type(validId);
-    cy.wait(1000);
-    AddAssetPage.send();
-  });
+    static visit(){
+        cy.visit(Cypress.config().baseUrl + '/add');
+        cy.reload();
+    }
 
-  When(/^I type new Asset invalid id and click Send$/, () => {
-    AddAssetPage.type('hgjkhjkh');
-    AddAssetPage.send();
-  });
+    static type(id) {
+        cy.get(defaultFormAddAsset, {timeout: 12000})
+          .type(id); 
+    }
 
-  When(/^I type new Asset empty id and click Send$/, () => {
-    AddAssetPage.type(' ');
-    AddAssetPage.send();
-  });
+    static send() {
+        cy.get(sendButton, {timeout: 12000})
+          .click(); 
+    }
 
-  Then(/^Correct format message appears$/, () => {
-    AddAssetPage.verifyValidFeedbacklabelIsVisible();
-  });
+    static verifyValidFeedbacklabelIsVisible(){
+        cy.get(validFeedbackLabel).should('be.visible');
+    }
 
-  Then(/^Correct format message does not appear$/, () => {
-    AddAssetPage.verifyInvalidFeedbacklabelIsNotVisible();
-  });
+    static verifyInvalidFeedbacklabelIsNotVisible(){
+        cy.get(validFeedbackLabel).should('not.be.visible');
+    }
+
+    static closeSuccessDialog(){
+        cy.get('div.modal-footer button.btn-warning').click();
+    }
+
+    static generateValidId(){ 
+        AddAssetPage.globalValidId = '';       
+        var capitalCharacters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        var charactersLength = capitalCharacters.length;
+
+        for ( var i = 0; i < 4; i++ ) {
+            AddAssetPage.globalValidId += capitalCharacters.charAt(Math.floor(Math.random() * charactersLength));            
+        }  
+        for ( var i = 0; i < 10; i++ ) {
+            var num = Math.floor((Math.random() * 9) + 1);
+            AddAssetPage.globalValidId += num;
+        }
+        return AddAssetPage.globalValidId;
+    }
+}
+
+export default AddAssetPage;
